@@ -17,11 +17,16 @@ import (
 func CommandGet(cmd *cobra.Command, args []string) {
 	mustLoadConfig(cmd)
 
-	rootDir, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatalf("unable to find home directory: %v", err)
+	rootDir := Config.Root
+	prettyRoot := Config.Root
+	if rootDir == "" {
+		var err error
+		rootDir, err = os.UserHomeDir()
+		if err != nil {
+			log.Fatalf("unable to find home directory: %v", err)
+		}
+		prettyRoot = "~"
 	}
-	prettyRoot := "~"
 
 	if len(args) == 0 {
 		cmd.Help()

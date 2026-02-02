@@ -29,6 +29,7 @@ const (
 var Config struct {
 	Host      string `json:"host"`
 	Cookie    string `json:"cookie"`
+	Root      string `json:"root,omitempty"`
 	apiReport bool
 	apiDump   bool
 }
@@ -77,6 +78,16 @@ func main() {
 		Run: CommandLogin,
 	}
 	cmdGrind.AddCommand(cmdLogin)
+
+	cmdConfig := &cobra.Command{
+		Use:   "config [root <path>]",
+		Short: "show or set configuration options",
+		Long: fmt.Sprintf("View or modify configuration settings.\n\n"+
+			"   Example: '%s config'\n"+
+			"   Example: '%s config root /Users/me/csci'\n", os.Args[0], os.Args[0]),
+		Run: CommandConfig,
+	}
+	cmdGrind.AddCommand(cmdConfig)
 
 	cmdList := &cobra.Command{
 		Use:   "list",
@@ -206,6 +217,15 @@ func CommandLogin(cmd *cobra.Command, args []string) {
 
 		log.Fatalf("Usage: %s login <hostname> <sessionkey>", os.Args[0])
 	}
+
+	home, err := os.UserHomeDir()
+	if err == nil && home != "" {
+		configFile := filepath.Join(home, perUserDotFile)
+		if raw, err := os.ReadFile(configFile); err == nil {
+			json.Unmarshal(raw, &Config)
+		}
+	}
+
 	hostname, key := args[0], args[1]
 	Config.Host = hostname
 
